@@ -5,7 +5,7 @@ $(function() {
   app = {
 //TODO: The current 'addFriend' function just adds the class 'friend'
 //to all messages sent by the user
-    server: 'https://api.parse.com/1/classes/chatterbox/',
+    server: 'http://localhost:3000/classes/messages',
     username: 'anonymous',
     roomname: 'lobby',
     lastMessageId: 0,
@@ -35,8 +35,10 @@ $(function() {
       setInterval(app.fetch, 3000);
     },
     send: function(data) {
+      console.log("in send")
       app.startSpinner();
       // Clear messages input
+      // app.$message = $('#message');
       app.$message.val('');
 
       // POST the message to the server
@@ -113,7 +115,7 @@ $(function() {
       }
     },
     populateRooms: function(results) {
-      app.$roomSelect.html('<option value="__newRoom">New room...</option><option value="" selected>Lobby</option></select>');
+      app.$roomSelect.html('<option value="__newRoom">New room...</option><option value="" selected>lobby</option></select>');
 
       if (results) {
         var rooms = {};
@@ -230,4 +232,11 @@ $(function() {
       $('form input[type=submit]').attr('disabled', null);
     }
   };
+
 }());
+
+
+
+
+
+window.sampleMsg = {username: "Ingi", roomname: "HR8", text: "hello world"};
