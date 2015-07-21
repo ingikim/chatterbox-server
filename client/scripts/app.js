@@ -5,7 +5,7 @@ $(function() {
   app = {
 //TODO: The current 'addFriend' function just adds the class 'friend'
 //to all messages sent by the user
-    server: 'http://localhost:3000/classes/messages',
+    server: 'http://localhost:3000',
     username: 'anonymous',
     roomname: 'lobby',
     lastMessageId: 0,
@@ -35,12 +35,10 @@ $(function() {
       setInterval(app.fetch, 3000);
     },
     send: function(data) {
-      console.log("in send")
+      console.log("in send");
       app.startSpinner();
       // Clear messages input
-      // app.$message = $('#message');
       app.$message.val('');
-
       // POST the message to the server
       $.ajax({
         url: app.server,

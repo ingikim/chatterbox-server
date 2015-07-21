@@ -23,10 +23,11 @@ var requestHandler = function(request, response) {
   var method = request.method;
   console.log(request.method);
   var url = request.url;
-  var statusCode = 200;
+  var statusCode = 0;
   var responseString = "Hello, World!";
 
   console.log("inside request Handler");
+  console.log("URL: ",url);
 
 
 
@@ -38,26 +39,62 @@ var requestHandler = function(request, response) {
   if (method === "GET") {
     headers['Content-Type'] = "application/json";
 
-
     console.log("INSIDE GET");
-    responseString = JSON.stringify(storage);
+
+    if (url.substring(0, 9) === '/classes/') {
+      if (url.substring(9, url.length) === "messages") {
+        responseString = JSON.stringify(storage);
+      } else {
+        var roomName = url.substring(9, url.length);
+        var filteredStorage = {results: []};
+        storage.results.forEach(function(data) {
+          if(data.roomname === roomName) {
+            filteredStorage.results.push(data);
+          }
+        });
+        responseString = JSON.stringify(filteredStorage);
+      }
+      statusCode = 200;
+    } else {
+      statusCode = 404; // bad GET request; nonexistent file name
+    }
   } else if (method === "POST") {
     headers['Content-Type'] = "text/plain";
 
     console.log("INSIDE POST");
 
-    request.on("data", function(data) {
-      var msg = JSON.parse(data);
-      msg.objectId = storage.results.length;
-      msg.createdAt = new Date();
-      msg.updatedAt = new Date()
-      storage.results.push(msg);
-    });
-    
-
+    if (url === '/send') {
+      request.on("data", function(data) {
+        var msg = JSON.parse(data);
+        msg.objectId = storage.results.length;
+        msg.createdAt = new Date();
+        msg.updatedAt = new Date()
+        storage.results.unshift(msg);
+      });
+      statusCode = 201;
+    } else if (url.substring(0, 9) === '/classes/') {
+      var roomName = url.substring(9, url.length);
+      if (roomName.length) {
+        request.on("data", function(data) {
+          var msg = JSON.parse(data);
+          msg.roomname = roomName;
+          msg.objectId = storage.results.length;
+          msg.createdAt = new Date();
+          msg.updatedAt = new Date()
+          storage.results.unshift(msg);
+        });
+        statusCode = 201;
+      } else {
+        statusCode = 400;
+      }
+    } else { // URL to POST request is not valid
+      statusCode = 400;
+    }
   } else if (method === "OPTIONS") {
 
-  } else {
+    console.log("OPTIONS getting called");
+
+  } else { // bad request
     statusCode = 400;
   }
 
