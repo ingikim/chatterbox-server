@@ -39,9 +39,10 @@ $(function() {
       app.startSpinner();
       // Clear messages input
       app.$message.val('');
+      var path = data.roomname ? "/classes/"+data.roomname : "/send";
       // POST the message to the server
       $.ajax({
-        url: app.server,
+        url: app.server + path,
         type: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json',
@@ -56,23 +57,31 @@ $(function() {
       });
     },
     fetch: function(animate) {
+      var displayedRoom = $('.chat span').first().data('roomname');
+      var path = displayedRoom ? "/classes/" + displayedRoom : "/classes/messages";
+      console.log("path: ", path);
       $.ajax({
-        url: app.server,
+        url: app.server + path,
         type: 'GET',
         contentType: 'application/json',
         data: { order: '-createdAt'},
         success: function(data) {
           console.log('chatterbox: Messages fetched');
-
+          console.log("Data.results:", data.results);
           // Don't bother if we have nothing to work with
-          if (!data.results || !data.results.length) { return; }
-
+          if (!data.results || !data.results.length) { 
+            app.stopSpinner(); // changed from original solution code
+            return; 
+          }
           // Get the last message
           var mostRecentMessage = data.results[data.results.length-1];
-          var displayedRoom = $('.chat span').first().data('roomname');
+
+
+          //var displayedRoom = $('.chat span').first().data('roomname');
           app.stopSpinner();
           // Only bother updating the DOM if we have a new message
           if (mostRecentMessage.objectId !== app.lastMessageId || app.roomname !== displayedRoom) {
+            
             // Update the UI with the fetched rooms
             app.populateRooms(data.results);
 

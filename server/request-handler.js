@@ -29,7 +29,7 @@ var requestHandler = function(request, response) {
   console.log("inside request Handler");
   console.log("URL: ",url);
 
-
+  console.log(storage);
 
 // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -40,12 +40,13 @@ var requestHandler = function(request, response) {
     headers['Content-Type'] = "application/json";
 
     console.log("INSIDE GET");
+    console.log(url);
 
     if (url.substring(0, 9) === '/classes/') {
-      if (url.substring(9, url.length) === "messages") {
+      if (url.substring(9, url.length).split("?")[0] === "messages") {
         responseString = JSON.stringify(storage);
       } else {
-        var roomName = url.substring(9, url.length);
+        var roomName = url.substring(9, url.length).split("?")[0];
         var filteredStorage = {results: []};
         storage.results.forEach(function(data) {
           if(data.roomname === roomName) {
@@ -69,11 +70,11 @@ var requestHandler = function(request, response) {
         msg.objectId = storage.results.length;
         msg.createdAt = new Date();
         msg.updatedAt = new Date()
-        storage.results.unshift(msg);
+        storage.results.push(msg); // maybe change back to unshift
       });
       statusCode = 201;
     } else if (url.substring(0, 9) === '/classes/') {
-      var roomName = url.substring(9, url.length);
+      var roomName = url.substring(9, url.length).split("?")[0];
       if (roomName.length) {
         request.on("data", function(data) {
           var msg = JSON.parse(data);
@@ -81,7 +82,7 @@ var requestHandler = function(request, response) {
           msg.objectId = storage.results.length;
           msg.createdAt = new Date();
           msg.updatedAt = new Date()
-          storage.results.unshift(msg);
+          storage.results.push(msg);
         });
         statusCode = 201;
       } else {
@@ -91,15 +92,15 @@ var requestHandler = function(request, response) {
       statusCode = 400;
     }
   } else if (method === "OPTIONS") {
-
     console.log("OPTIONS getting called");
-
+    responseString += "Allow: GET, POST, OPTIONS";
+    statusCode = 200;
+    console.log(responseString);
   } else { // bad request
     statusCode = 400;
   }
 
   response.writeHead(statusCode, headers);
-
   response.end(responseString);
 };
 
